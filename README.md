@@ -1,6 +1,6 @@
 # Crypto Checkout Platform
 
-A Stripe/PayPal-style crypto payment platform where merchants embed payment buttons on their sites, and customers pay via wallets (Solana/EVM). Built in Next.js + TypeScript with a non-custodial flow (funds go directly to merchants’ wallets).
+A Stripe/PayPal-style crypto payment platform where merchants embed payment buttons on their sites, and customers pay via EVM wallets (Ethereum, Polygon, etc.). Built in Next.js + TypeScript with a non-custodial flow (funds go directly to merchants' wallets).
 
 ---
 
@@ -16,8 +16,8 @@ flowchart TD
 	end
 	E -->|POST /api/payments/init| F[Payments API]
 	F -->|Create PaymentIntent| G[(DB)]
-	E <-->|Sign & Send Tx| I[User Wallet]
-	I --> J[(Blockchain RPC)]
+	E <-->|Sign & Send Tx| I[EVM Wallet]
+	I --> J[(EVM RPC)]
 	J -->|Tx Confirmed| K[Listener Worker]
 	K -->|Update DB + Fire Webhook| L[Merchant Server]
 ```
@@ -30,10 +30,8 @@ flowchart TD
 - **DB:** MongoDB
 - **Queue/Worker:** BullMQ + Redis (for confirmations & webhooks)
 - **Blockchain libs:**
-  - Solana: `@solana/web3.js`, Solana Pay reference keys
   - EVM: `viem` or `ethers.js`
 - **Wallet adapters:**
-  - Solana: `@solana/wallet-adapter-react`
   - EVM: `wagmi` + RainbowKit
 - **Styles:** Tailwind CSS + shadcn/ui
 - **Security:** HMAC signing (buttons, webhooks), idempotency keys
@@ -46,7 +44,7 @@ flowchart TD
 
 - Login/auth (email or wallet)
 - Create payment button
-- Configure payout address (Solana/EVM)
+- Configure payout address (EVM)
 - Copy embeddable `<script>` snippet
 - View payments list & statuses
 - Webhook config (URL + secret)
@@ -62,7 +60,7 @@ flowchart TD
 ### Hosted Checkout
 
 - `/checkout` route with dynamic UI
-- Connect wallet (Solana / EVM)
+- Connect EVM wallet
 - Show amount, token, merchant details
 - Sign & send transaction
 - Poll payment status until confirmed
@@ -76,12 +74,11 @@ flowchart TD
 
 ### Blockchain Integration
 
-- Solana native SOL payments
-- Solana USDC (SPL token) payments
 - EVM native ETH payments
-- EVM ERC-20 (USDC) payments
-- Reference keys (Solana) + tx verification
+- EVM ERC-20 (USDC, USDT, etc.) payments
+- Multi-chain support (Ethereum, Polygon, Arbitrum, etc.)
 - Log decoding for ERC-20 transfers
+- Transaction verification and confirmation
 
 ### Worker + Webhooks
 
@@ -119,13 +116,11 @@ src/
 			webhooks/merchant/route.ts
 		components/
 			checkout/
-				SolanaCheckout.tsx
 				EvmCheckout.tsx
 		lib/
 			db.ts
 			payments/
 				intents.ts
-				solana.ts
 				evm.ts
 				webhooks.ts
 			security/
@@ -137,20 +132,21 @@ src/
 
 ## 🚀 Development Plan
 
-**Phase 1 – Solana MVP**
+**Phase 1 – EVM MVP**
 
-- Dashboard: button creation with Solana address + fixed amount
+- Dashboard: button creation with EVM address + fixed amount
 - SDK: embed snippet → hosted checkout
-- `/api/payments/init`: create intent + return Solana tx (with reference key)
-- Wallet adapter integration, sign + send
+- `/api/payments/init`: create intent + return EVM tx
+- Wallet adapter integration (wagmi), sign + send
 - RPC poller: confirm tx, verify destination + amount
 - Webhook delivery → merchant
 
-**Phase 2 – EVM Support**
+**Phase 2 – Multi-Chain Support**
 
-- Add viem tx builder for ETH + ERC-20
-- Confirm tx by hash, decode transfer logs
-- Update checkout UI to toggle chain
+- Add support for multiple EVM chains (Polygon, Arbitrum, etc.)
+- Chain selection in checkout UI
+- Optimize gas estimation per chain
+- Cross-chain payment routing
 
 **Phase 3 – Hardening**
 
@@ -165,9 +161,10 @@ src/
 ## 🔒 Security Model
 
 - **Non-custodial:** user → merchant wallet directly
-- **Server verified:** destination + amount validated on-chain
+- **Server verified:** destination + amount validated on-chain via EVM RPC
 - **Anti-tamper:** button config signed, server-enforced
 - **Webhooks:** signed with HMAC, replay-safe
+- **Gas optimization:** smart gas estimation and fee management
 
 ---
 
