@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Try",
-  description: "RainbowKit + Wagmi + Next.js",
+  title: "Crypto Checkout",
+  description: "Stripe/PayPal-style crypto payment platform for merchants",
 };
 
 export default function RootLayout({

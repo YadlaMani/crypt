@@ -16,7 +16,7 @@ import {
 } from "@clerk/nextjs";
 
 const config = getDefaultConfig({
-  appName: "Try",
+  appName: "Crypto Checkout",
   projectId: "53688872b6773653b330aeac9b47748d",
   chains: [mainnet, polygon, optimism, arbitrum, base],
   ssr: true,
