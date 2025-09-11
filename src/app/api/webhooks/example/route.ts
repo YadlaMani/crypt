@@ -30,27 +30,29 @@ export async function POST(request: NextRequest) {
 
     // Parse the webhook payload
     const payload = parseWebhookPayload(body);
-    if (!payload) {
+    if (!payload || typeof payload !== 'object' || !('data' in payload)) {
       return NextResponse.json(
         { error: 'Invalid payload' },
         { status: 400 }
       );
     }
 
+    const typedPayload = payload as { data: { paymentIntentId: string; amount: string; transactionHash?: string } };
+
     console.log('Received webhook:', {
       event,
-      paymentIntentId: payload.data.paymentIntentId,
-      amount: payload.data.amount,
+      paymentIntentId: typedPayload.data.paymentIntentId,
+      amount: typedPayload.data.amount,
       status: event === 'payment.confirmed' ? 'confirmed' : 'failed',
     });
 
     // Handle the webhook event
     switch (event) {
       case 'payment.confirmed':
-        await handlePaymentConfirmed(payload);
+        await handlePaymentConfirmed(typedPayload);
         break;
       case 'payment.failed':
-        await handlePaymentFailed(payload);
+        await handlePaymentFailed(typedPayload);
         break;
       default:
         console.log(`Unknown webhook event: ${event}`);
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handlePaymentConfirmed(payload: any) {
+async function handlePaymentConfirmed(payload: { data: { paymentIntentId: string; amount: string; transactionHash?: string } }) {
   // Example: Update your database, send confirmation email, etc.
   console.log('Payment confirmed:', payload.data);
   
@@ -77,7 +79,7 @@ async function handlePaymentConfirmed(payload: any) {
   // - Update inventory
 }
 
-async function handlePaymentFailed(payload: any) {
+async function handlePaymentFailed(payload: { data: { paymentIntentId: string; amount: string; transactionHash?: string } }) {
   // Example: Log failed payment, notify support, etc.
   console.log('Payment failed:', payload.data);
   

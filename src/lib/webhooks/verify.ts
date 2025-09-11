@@ -26,7 +26,7 @@ export function verifyWebhookSignature(
   }
 }
 
-export function parseWebhookPayload(payload: string): any {
+export function parseWebhookPayload(payload: string): unknown {
   try {
     return JSON.parse(payload);
   } catch (error) {

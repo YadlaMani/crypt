@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import connectDB from '@/lib/db';
 import Merchant from '@/lib/models/Merchant';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { userId } = await auth();
     

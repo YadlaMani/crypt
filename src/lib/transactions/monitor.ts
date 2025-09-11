@@ -1,8 +1,8 @@
 import { createPublicClient, http, parseAbi } from 'viem';
 import { mainnet, polygon, optimism, arbitrum, base } from 'viem/chains';
 import connectDB from '@/lib/db';
-import PaymentIntent from '@/lib/models/PaymentIntent';
-import Button from '@/lib/models/Button';
+import PaymentIntent, { IPaymentIntent } from '@/lib/models/PaymentIntent';
+import Button, { IButton } from '@/lib/models/Button';
 import { webhookSender } from '@/lib/webhooks/sender';
 
 const chains = {
@@ -13,10 +13,7 @@ const chains = {
   8453: base,
 };
 
-const ERC20_ABI = parseAbi([
-  'function transfer(address to, uint256 amount) returns (bool)',
-  'event Transfer(address indexed from, address indexed to, uint256 value)',
-]);
+// ERC20_ABI is available if needed for future enhancements
 
 export class TransactionMonitor {
   private clients: Record<number, any> = {};
@@ -69,13 +66,13 @@ export class TransactionMonitor {
         await this.handleTransactionReceipt(paymentIntentId, receipt, chainId);
         this.stopMonitoring(paymentIntentId);
       }
-    } catch (error) {
+    } catch {
       // Transaction might not be mined yet
       console.log(`Transaction ${txHash} not yet mined`);
     }
   }
 
-  private async handleTransactionReceipt(paymentIntentId: string, receipt: any, chainId: number) {
+  private async handleTransactionReceipt(paymentIntentId: string, receipt: unknown, chainId: number) {
     await connectDB();
 
     const paymentIntent = await PaymentIntent.findOne({ id: paymentIntentId });
@@ -94,10 +91,10 @@ export class TransactionMonitor {
 
     if (button.tokenAddress) {
       // ERC-20 token transfer
-      isValid = await this.validateERC20Transfer(receipt, button, paymentIntent);
+      isValid = await this.validateERC20Transfer(receipt, button);
     } else {
       // ETH transfer
-      isValid = await this.validateETHTransfer(receipt, button, paymentIntent);
+      isValid = await this.validateETHTransfer(receipt, button);
     }
 
     if (isValid) {
@@ -120,44 +117,51 @@ export class TransactionMonitor {
     }
   }
 
-  private async validateETHTransfer(receipt: any, button: Button, paymentIntent: PaymentIntent): Promise<boolean> {
+  private async validateETHTransfer(receipt: unknown, button: IButton): Promise<boolean> {
+    const receiptTyped = receipt as { status: string; to?: string; value?: string };
+    
     // Check if transaction was successful
-    if (receipt.status !== 'success') {
+    if (receiptTyped.status !== 'success') {
       return false;
     }
 
     // Check if the transaction was sent to the correct address
-    if (receipt.to?.toLowerCase() !== button.merchantAddress.toLowerCase()) {
+    if (receiptTyped.to?.toLowerCase() !== button.merchantAddress.toLowerCase()) {
       return false;
     }
 
     // Check if the amount matches (for ETH transfers, this is the value field)
     const expectedAmount = BigInt(button.amount);
-    const actualAmount = BigInt(receipt.value || '0');
+    const actualAmount = BigInt(receiptTyped.value || '0');
     
     return actualAmount >= expectedAmount;
   }
 
-  private async validateERC20Transfer(receipt: any, button: Button, paymentIntent: PaymentIntent): Promise<boolean> {
+  private async validateERC20Transfer(receipt: unknown, button: IButton): Promise<boolean> {
+    const receiptTyped = receipt as { status: string; logs: unknown[] };
+    
     // Check if transaction was successful
-    if (receipt.status !== 'success') {
+    if (receiptTyped.status !== 'success') {
       return false;
     }
 
     // Check for ERC-20 Transfer events
-    const transferEvents = receipt.logs.filter((log: any) => {
+    const transferEvents = receiptTyped.logs.filter((log: unknown) => {
+      const logTyped = log as { topics: string[] };
       // ERC-20 Transfer event signature: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
-      return log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+      return logTyped.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
     });
 
     for (const event of transferEvents) {
+      const eventTyped = event as { topics: string[]; address: string; data: string };
+      
       // Check if the transfer was to the merchant address
-      const toAddress = '0x' + event.topics[2].slice(-40);
+      const toAddress = '0x' + eventTyped.topics[2].slice(-40);
       if (toAddress.toLowerCase() === button.merchantAddress.toLowerCase()) {
         // Check if it's the correct token
-        if (event.address.toLowerCase() === button.tokenAddress?.toLowerCase()) {
+        if (eventTyped.address.toLowerCase() === button.tokenAddress?.toLowerCase()) {
           // Check if the amount is correct
-          const amount = BigInt(event.data);
+          const amount = BigInt(eventTyped.data);
           const expectedAmount = BigInt(button.amount);
           
           if (amount >= expectedAmount) {

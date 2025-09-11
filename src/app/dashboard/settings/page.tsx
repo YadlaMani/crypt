@@ -116,7 +116,7 @@ export default function SettingsPage() {
                 className="mt-1"
               />
               <p className="text-sm text-gray-500 mt-1">
-                We'll send payment notifications to this URL
+                We&apos;ll send payment notifications to this URL
               </p>
             </div>
 

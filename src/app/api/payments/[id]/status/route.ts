@@ -4,12 +4,13 @@ import PaymentIntent from '@/lib/models/PaymentIntent';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const paymentIntent = await PaymentIntent.findOne({ id: params.id });
+    const { id } = await params;
+    const paymentIntent = await PaymentIntent.findOne({ id });
 
     if (!paymentIntent) {
       return NextResponse.json(
@@ -41,7 +42,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
@@ -49,7 +50,7 @@ export async function PATCH(
 
     await connectDB();
 
-    const updateData: any = {};
+    const updateData: { transactionHash?: string; status?: string; confirmedAt?: Date } = {};
     if (transactionHash) updateData.transactionHash = transactionHash;
     if (status) {
       updateData.status = status;
@@ -58,8 +59,9 @@ export async function PATCH(
       }
     }
 
+    const { id } = await params;
     const paymentIntent = await PaymentIntent.findOneAndUpdate(
-      { id: params.id },
+      { id },
       updateData,
       { new: true }
     );

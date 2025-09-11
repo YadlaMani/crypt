@@ -5,7 +5,7 @@ import Button from '@/lib/models/Button';
 import Merchant from '@/lib/models/Merchant';
 import crypto from 'crypto';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { userId } = await auth();
     

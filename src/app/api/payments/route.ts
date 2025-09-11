@@ -4,7 +4,7 @@ import connectDB from '@/lib/db';
 import PaymentIntent from '@/lib/models/PaymentIntent';
 import Button from '@/lib/models/Button';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { userId } = await auth();
     

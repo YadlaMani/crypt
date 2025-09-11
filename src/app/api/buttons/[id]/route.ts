@@ -4,12 +4,13 @@ import Button from '@/lib/models/Button';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const button = await Button.findOne({ id: params.id, isActive: true });
+    const { id } = await params;
+    const button = await Button.findOne({ id, isActive: true });
 
     if (!button) {
       return NextResponse.json(

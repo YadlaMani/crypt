@@ -39,7 +39,7 @@ export default function CheckoutPage() {
 
   const { sendTransaction, data: hash, isPending, error: txError } = useSendTransaction();
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   });
 
@@ -63,7 +63,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (isConfirmed && paymentData) {
       setPaymentStatus('confirmed');
-      updatePaymentIntent(hash, 'confirmed');
+      updatePaymentIntent(hash!, 'confirmed');
     }
   }, [isConfirmed, paymentData, hash]);
 
@@ -143,9 +143,9 @@ export default function CheckoutPage() {
     if (!paymentData || !isConnected) return;
 
     sendTransaction({
-      to: paymentData.transactionData.to,
-      value: paymentData.transactionData.value,
-      data: paymentData.transactionData.data,
+      to: paymentData.transactionData.to as `0x${string}`,
+      value: BigInt(paymentData.transactionData.value),
+      data: paymentData.transactionData.data as `0x${string}`,
     });
   };
 
@@ -153,12 +153,7 @@ export default function CheckoutPage() {
     if (tokenAddress) {
       return `${amount} Tokens`;
     }
-    try {
-      const ethAmount = parseEther(amount);
-      return `${amount} ETH`;
-    } catch {
-      return `${amount} ETH`;
-    }
+    return `${amount} ETH`;
   };
 
   const getChainName = (chainId: number) => {
