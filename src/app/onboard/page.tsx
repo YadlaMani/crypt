@@ -1,13 +1,21 @@
 import { fetchProfileAction } from "@/actions/userActions";
+import OnBoard from "@/components/OnBoard";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-export default async function Home() {
+import React from "react";
+
+const OnBoardPage = async () => {
+  //get the auth user from the clerk
   const user = await currentUser();
   if (!user) redirect("/sign-in");
-
+  //fetch profile info
   const res = await fetchProfileAction(user?.id);
   const profileInfo = res.ok ? await res.json() : null;
-  if (user && !profileInfo) redirect("/onboard");
-  return <section>Main content</section>;
-}
+
+  if (profileInfo) {
+    redirect("/");
+  } else return <OnBoard />;
+};
+
+export default OnBoardPage;
