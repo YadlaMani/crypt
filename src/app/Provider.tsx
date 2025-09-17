@@ -3,9 +3,13 @@
 import { WagmiProvider } from "wagmi";
 import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import {
+  getDefaultConfig,
+  RainbowKitProvider,
+  ConnectButton,
+} from "@rainbow-me/rainbowkit";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Link from "next/link";
 import {
   ClerkProvider,
   SignInButton,
@@ -13,7 +17,11 @@ import {
   SignedIn,
   SignedOut,
   UserButton,
+  SignOutButton,
 } from "@clerk/nextjs";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const config = getDefaultConfig({
   appName: "Crypto Checkout",
@@ -25,6 +33,8 @@ const config = getDefaultConfig({
 const queryClient = new QueryClient();
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+
   return (
     <ThemeProvider
       attribute="class"
@@ -36,21 +46,72 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <RainbowKitProvider>
             <ClerkProvider>
-              {" "}
-              <header className="flex justify-end items-center p-4 gap-4 h-16">
-                <SignedOut>
-                  <SignInButton />
-                  <SignUpButton>
-                    <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-                      Sign Up
-                    </button>
-                  </SignUpButton>
-                </SignedOut>
-                <SignedIn>
-                  <UserButton />
-                  <ConnectButton />
-                </SignedIn>
+              <header className="flex justify-between items-center p-4 h-16 border-b">
+                <div className="text-lg font-semibold">Crypto Checkout</div>
+
+                <nav className="hidden sm:flex gap-4 items-center">
+                  <SignedOut>
+                    <SignInButton />
+                    <SignUpButton>
+                      <Button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                        Sign Up
+                      </Button>
+                    </SignUpButton>
+                  </SignedOut>
+
+                  <SignedIn>
+                    <ConnectButton />
+                    <Link href="/buttons">Buttons</Link>
+                    <Link href="/payments">Payments</Link>
+                    <Link href="/settings">Settings</Link>
+                    <UserButton />
+                    <SignOutButton>
+                      <button className="bg-red-500 text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                        Sign Out
+                      </button>
+                    </SignOutButton>
+                  </SignedIn>
+                </nav>
+
+                <div className="sm:hidden">
+                  <button onClick={() => setOpen(!open)}>
+                    {open ? <X size={24} /> : <Menu size={24} />}
+                  </button>
+                </div>
               </header>
+
+              {open && (
+                <div className="sm:hidden flex flex-col items-start gap-4 p-4 border-b">
+                  <SignedOut>
+                    <SignInButton />
+                    <SignUpButton>
+                      <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm h-10 px-4 cursor-pointer">
+                        Sign Up
+                      </button>
+                    </SignUpButton>
+                  </SignedOut>
+
+                  <SignedIn>
+                    <ConnectButton />
+                    <Link href="/buttons" onClick={() => setOpen(false)}>
+                      Buttons
+                    </Link>
+                    <Link href="/payments" onClick={() => setOpen(false)}>
+                      Payments
+                    </Link>
+                    <Link href="/settings" onClick={() => setOpen(false)}>
+                      Settings
+                    </Link>
+                    <UserButton />
+                    <SignOutButton>
+                      <button className="bg-red-500 text-white rounded-full font-medium text-sm h-10 px-4 cursor-pointer">
+                        Sign Out
+                      </button>
+                    </SignOutButton>
+                  </SignedIn>
+                </div>
+              )}
+
               {children}
             </ClerkProvider>
           </RainbowKitProvider>

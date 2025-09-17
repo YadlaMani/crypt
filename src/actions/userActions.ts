@@ -1,6 +1,6 @@
 "use server";
 import connectToDB from "@/database";
-import Profile from "@/models/userModel";
+import Profile from "@/models/profileModel";
 import { NextResponse } from "next/server";
 export async function fetchProfileAction(id: string) {
   await connectToDB();
