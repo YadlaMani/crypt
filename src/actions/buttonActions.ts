@@ -1,18 +1,30 @@
 "use server";
 import connectToDB from "@/database";
 import Button from "@/models/buttonModel";
-
+import { ButtonType } from "@/types/button";
 export async function getUserButtons(userId: string) {
   try {
     await connectToDB();
-    const buttons = await Button.find({ userId });
+    const buttons: ButtonType[] = await Button.find({ userId }).sort({
+      createdAt: -1,
+    });
+    if (!buttons || buttons.length === 0) {
+      return {
+        success: false,
+        error: "No buttons found",
+      };
+    }
     return {
       success: true,
-      buttons: buttons,
+      buttons: buttons as ButtonType[],
     };
   } catch (err) {
     console.error("Error fetching buttons:", err);
-    return { succes: false, error: "Failed to fetch buttons", details: err };
+    return {
+      success: false,
+      error: "Failed to fetch buttons",
+      details: err instanceof Error ? err.message : err,
+    };
   }
 }
 
@@ -20,57 +32,62 @@ export async function createButton(data: {
   name: string;
   description: string;
   amount: number;
-  tokenAddress: string;
-  chainId: string;
+  chainId: string[];
   merchantAddress: string;
   userId: string;
 }) {
-  console.log(data);
   try {
     await connectToDB();
 
     const newButton = new Button({
-      ...data,
-      isActive: true,
+      name: data.name,
+      description: data.description,
+      amount: data.amount,
+      chainId: data.chainId,
+      merchantAddress: data.merchantAddress,
+      userId: data.userId,
     });
 
     await newButton.save();
+    console.log("New button created:", newButton);
 
     return {
       success: true,
       message: "Button created successfully",
-      button: newButton,
     };
   } catch (err) {
     console.error("Error creating button:", err);
     return {
       success: false,
       message: "Failed to create button",
-      details: err,
+      details: err instanceof Error ? err.message : err,
     };
   }
 }
 
 export async function getButtonById(buttonId: string) {
-  connectToDB();
   try {
+    await connectToDB();
     const button = await Button.findById(buttonId);
+
     if (!button) {
       return {
         success: false,
-        message: "Invalid id",
+        message: "Invalid button ID",
       };
     }
+
     return {
       success: true,
-      button: button,
+      button,
       message: "Button fetched successfully",
     };
   } catch (err) {
+    console.error("Error fetching button by ID:", err);
     return {
       success: false,
-      message: "Button id is invalid or something went wrong",
-      details: err,
+      message: "Button ID is invalid or something went wrong",
+      details: err instanceof Error ? err.message : err,
     };
   }
 }

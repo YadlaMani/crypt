@@ -4,7 +4,7 @@ export type ButtonType = {
   description?: string;
   amount: number;
   tokenAddress?: string;
-  chainId: string;
+  chainId: string[];
   merchantAddress: string;
   isActive: boolean;
 };

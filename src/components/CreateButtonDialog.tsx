@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+
 import {
   Dialog,
   DialogTrigger,
@@ -13,36 +14,38 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
-import { createButton } from "@/actions/buttonActions";
+import { createButton as createButtonAction } from "@/actions/buttonActions";
 import { useUser } from "@clerk/nextjs";
 import { ButtonType } from "@/types/button";
+import { chains } from "@/utils/chain";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type CreateButtonDialogProps = {
-  onCreated: (button: ButtonType) => void;
+  onCreated: () => Promise<void>;
 };
 
 export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
   const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    name: string;
+    description: string;
+    amount: string;
+    tokenAddress: string;
+    chainId: string[];
+    merchantAddress: string;
+  }>({
     name: "",
     description: "",
     amount: "",
     tokenAddress: "",
-    chainId: "",
+    chainId: [],
     merchantAddress: "",
   });
 
-  const handleChange = (key: string, value: string) => {
+  const handleChange = (key: string, value: string | string[]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -52,7 +55,7 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
       description: "",
       amount: "",
       tokenAddress: "",
-      chainId: "",
+      chainId: [],
       merchantAddress: "",
     });
   };
@@ -62,12 +65,10 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
     setSubmitting(true);
 
     try {
-      const res = await createButton({
+      const res = await createButtonAction({
         name: form.name,
         description: form.description,
         amount: parseFloat(form.amount),
-        tokenAddress:
-          form.tokenAddress || "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
         chainId: form.chainId,
         merchantAddress: form.merchantAddress,
         userId: user.id,
@@ -77,10 +78,11 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
         toast.error(res.message || "Failed to create button");
         return;
       }
-
-      onCreated(res.button);
-      resetForm();
       setOpen(false);
+      onCreated();
+
+      resetForm();
+
       toast.success("Button created successfully!");
     } catch (error) {
       console.error("Error creating button:", error);
@@ -88,6 +90,15 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const toggleChain = (id: string) => {
+    handleChange(
+      "chainId",
+      form.chainId.includes(id)
+        ? form.chainId.filter((c) => c !== id)
+        : [...form.chainId, id]
+    );
   };
 
   return (
@@ -122,31 +133,26 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
               onChange={(e) => handleChange("amount", e.target.value)}
             />
           </div>
+
+          {/* Chain Selection with Checkbox */}
           <div>
-            <Label>Token Address (optional)</Label>
-            <Input
-              value={form.tokenAddress}
-              onChange={(e) => handleChange("tokenAddress", e.target.value)}
-            />
+            <Label>Chains</Label>
+            <div className="flex flex-col gap-2 mt-2">
+              {chains.map((chain) => (
+                <label
+                  key={chain.id}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <Checkbox
+                    checked={form.chainId.includes(chain.id)}
+                    onCheckedChange={() => toggleChain(chain.id)}
+                  />
+                  <span>{chain.name}</span>
+                </label>
+              ))}
+            </div>
           </div>
-          <div>
-            <Label>Chain</Label>
-            <Select
-              onValueChange={(val) => handleChange("chainId", val)}
-              value={form.chainId}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a chain" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Ethereum Mainnet</SelectItem>
-                <SelectItem value="137">Polygon</SelectItem>
-                <SelectItem value="42161">Arbitrum</SelectItem>
-                <SelectItem value="10">Optimism</SelectItem>
-                <SelectItem value="8453">Base</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+
           <div>
             <Label>Merchant Address</Label>
             <Input

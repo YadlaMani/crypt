@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { chains } from "@/utils/chain";
 
 type Transaction = {
   _id: string;
@@ -21,8 +22,8 @@ type ButtonType = {
   name: string;
   description?: string;
   amount: number;
-  tokenAddress: string;
-  chainId: string;
+  tokenAddress?: string;
+  chainId: string[];
   merchantAddress: string;
   isActive: boolean;
   transactions: Transaction[];
@@ -57,6 +58,9 @@ export default function ButtonDetailsPage() {
   if (loading) return <p className="text-center py-10">Loading button...</p>;
   if (!button) return <p className="text-center py-10">Button not found.</p>;
 
+  const getChainName = (id: string) =>
+    chains.find((c) => c.id === id)?.name || id;
+
   return (
     <div className="max-w-4xl mx-auto py-8">
       <Card className="shadow-md rounded-2xl">
@@ -79,11 +83,17 @@ export default function ButtonDetailsPage() {
               <span className="font-medium">Amount:</span> {button.amount}
             </p>
             <p>
-              <span className="font-medium">Chain ID:</span> {button.chainId}
+              <span className="font-medium">Chains:</span>{" "}
+              {button.chainId.length > 0
+                ? button.chainId.map((cid) => getChainName(cid)).join(", ")
+                : "No chain selected"}
             </p>
-            <p>
-              <span className="font-medium">Token:</span> {button.tokenAddress}
-            </p>
+            {button.tokenAddress && (
+              <p>
+                <span className="font-medium">Token:</span>{" "}
+                {button.tokenAddress}
+              </p>
+            )}
             <p>
               <span className="font-medium">Merchant:</span>{" "}
               {button.merchantAddress}
