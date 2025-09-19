@@ -6,8 +6,10 @@ import { getButtonById } from "@/actions/buttonActions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { chains } from "@/utils/chain";
+import Link from "next/link";
 
 type Transaction = {
   _id: string;
@@ -98,6 +100,16 @@ export default function ButtonDetailsPage() {
               <span className="font-medium">Merchant:</span>{" "}
               {button.merchantAddress}
             </p>
+          </div>
+
+          <Separator />
+
+          <div className="flex gap-3">
+            <Link href={`/buttons/${button._id}/pay`}>
+              <Button className="bg-[#6c47ff] text-white hover:bg-[#5a3ae6]">
+                Pay with Crypto
+              </Button>
+            </Link>
           </div>
 
           <Separator />
