@@ -8,8 +8,8 @@ export default async function Home() {
   if (!user) redirect("/sign-in");
 
   const res = await fetchProfileAction(user.id);
-  const profileInfo = res.ok ? await res.json() : null;
+  const profileInfo = res.success ? await res.profile : null;
   if (user && !profileInfo) redirect("/onboard");
-  
+
   return <MainDashboard />;
 }

@@ -1,39 +1,45 @@
 "use client";
 
 import React, { useState } from "react";
-import { JSX } from "react";
 import { Loader2, Check, X } from "lucide-react";
 
-type TransactionStatus =
-  | "creating"
-  | "processing"
-  | "success"
-  | "failed"
-  | null;
+type TransactionStatus = "creating" | "pending" | "success" | "failed" | null;
+type TransactionState = "success" | "failed" | "timeout" | "error";
 
 interface PaymentButtonProps {
   buttonId: string;
+  amount: number;
+  currency?: string;
+  merchantName?: string;
   onTransactionStateChange?: (
     state: TransactionState,
     transactionId: string
   ) => void;
 }
 
-type TransactionState = "success" | "failed" | "timeout" | "error";
-
 const PaymentButton: React.FC<PaymentButtonProps> = ({
   onTransactionStateChange,
   buttonId,
+  amount,
+  currency = "USDC",
+  merchantName = "Merchant",
 }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [cryptoId, setCryptoId] = useState<string>(""); // renamed
+  const [isOpen, setIsOpen] = useState(false);
+  const [cryptoId, setCryptoId] = useState("");
   const [transactionStatus, setTransactionStatus] =
     useState<TransactionStatus>(null);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [pollingCount, setPollingCount] = useState<number>(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [pollingCount, setPollingCount] = useState(0);
 
-  const handlePayment = async (): Promise<void> => {
-    if (!cryptoId) {
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 6,
+    }).format(amount);
+  };
+
+  const handlePayment = async () => {
+    if (!cryptoId.trim()) {
       alert("Please enter your crypto ID");
       return;
     }
@@ -42,28 +48,21 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     setTransactionStatus("creating");
 
     try {
-      const response = await fetch("/api/create-transaction", {
+      const response = await fetch(`/api/create-transaction`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          buttonId,
-          cryptoId,
-        }),
+        body: JSON.stringify({ buttonId, cryptoId, amount, currency }),
       });
 
-      const { transactionId }: { transactionId: string } =
-        await response.json();
-
+      const { transactionId } = await response.json();
       pollTransactionStatus(transactionId);
     } catch (error) {
       setTransactionStatus("failed");
-      setTimeout(() => setIsOpen(false), 2000);
+      setTimeout(() => closeDialog(), 2000);
     }
   };
 
-  const pollTransactionStatus = async (
-    transactionId: string
-  ): Promise<void> => {
+  const pollTransactionStatus = async (transactionId: string) => {
     const maxPolls = 60;
     let pollCount = 0;
 
@@ -72,21 +71,22 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         const response = await fetch(
           `/api/transaction-status/${transactionId}`
         );
-        const { status }: { status: string } = await response.json();
+        const { status } = await response.json();
 
         setPollingCount(pollCount);
+        setTransactionStatus("pending");
 
-        if (status === "completed") {
+        if (status === "success") {
           setTransactionStatus("success");
           onTransactionStateChange?.("success", transactionId);
-          setTimeout(() => setIsOpen(false), 3000);
+          setTimeout(() => closeDialog(), 3000);
           return;
         }
 
         if (status === "failed") {
           setTransactionStatus("failed");
           onTransactionStateChange?.("failed", transactionId);
-          setTimeout(() => setIsOpen(false), 2000);
+          setTimeout(() => closeDialog(), 2000);
           return;
         }
 
@@ -94,7 +94,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         if (pollCount >= maxPolls) {
           setTransactionStatus("failed");
           onTransactionStateChange?.("timeout", transactionId);
-          setTimeout(() => setIsOpen(false), 2000);
+          setTimeout(() => closeDialog(), 2000);
           return;
         }
 
@@ -102,14 +102,14 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       } catch (error) {
         setTransactionStatus("failed");
         onTransactionStateChange?.("error", transactionId);
-        setTimeout(() => setIsOpen(false), 2000);
+        setTimeout(() => closeDialog(), 2000);
       }
     };
 
     poll();
   };
 
-  const resetDialog = (): void => {
+  const closeDialog = () => {
     setIsOpen(false);
     setCryptoId("");
     setTransactionStatus(null);
@@ -117,105 +117,167 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     setPollingCount(0);
   };
 
-  const getStatusIcon = (): JSX.Element | null => {
-    switch (transactionStatus) {
-      case "creating":
-      case "processing":
-        return <Loader2 className="h-6 w-6 animate-spin text-blue-500" />;
-      case "success":
-        return <Check className="h-6 w-6 text-green-500" />;
-      case "failed":
-        return <X className="h-6 w-6 text-red-500" />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusText = (): string => {
-    switch (transactionStatus) {
-      case "creating":
-        return "Creating transaction...";
-      case "processing":
-        return `Processing transaction... (${pollingCount}/60)`;
-      case "success":
-        return "Payment successful!";
-      case "failed":
-        return "Payment failed. Please try again.";
-      default:
-        return "";
-    }
+  const getStatusMessage = () => {
+    const messages = {
+      creating: "Creating payment...",
+      pending: "Processing payment...",
+      processing: "Processing payment...",
+      success: "Payment completed",
+      failed: "Payment failed",
+    };
+    return transactionStatus ? messages[transactionStatus] : "";
   };
 
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-md transition-colors duration-150"
       >
-        Pay Now
+        Pay {formatAmount(amount)} {currency}
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-96 max-w-90vw">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Complete Payment
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50" onClick={closeDialog} />
+          <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl border dark:border-gray-800 w-full max-w-sm">
+            <div className="flex items-center justify-between p-6 pb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Complete payment
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Pay {merchantName}
+                </p>
+              </div>
               <button
-                onClick={resetDialog}
+                onClick={closeDialog}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                <X className="h-5 w-5" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {!transactionStatus ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Crypto ID
-                  </label>
-                  <input
-                    type="text"
-                    value={cryptoId}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setCryptoId(e.target.value)
-                    }
-                    placeholder="Enter your crypto ID"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg 
+            <div className="px-6 pb-4">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-4 mb-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Total
+                  </span>
+                  <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    {formatAmount(amount)} {currency}
+                  </span>
+                </div>
+              </div>
+
+              {!transactionStatus ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Crypto ID
+                    </label>
+                    <input
+                      type="text"
+                      value={cryptoId}
+                      onChange={(e) => setCryptoId(e.target.value)}
+                      placeholder="Enter your crypto ID"
+                      className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md 
                                bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 
                                placeholder-gray-400 dark:placeholder-gray-500 
-                               focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-400"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handlePayment}
+                    disabled={isProcessing || !cryptoId.trim()}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 
+                             text-white font-medium py-2.5 px-4 rounded-md 
+                             disabled:cursor-not-allowed transition-colors duration-150"
+                  >
+                    {isProcessing ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing
+                      </span>
+                    ) : (
+                      `Pay ${formatAmount(amount)} ${currency}`
+                    )}
+                  </button>
                 </div>
-                <button
-                  onClick={handlePayment}
-                  disabled={isProcessing}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-lg font-medium transition-colors"
-                >
-                  {isProcessing ? "Processing..." : "Confirm Payment"}
-                </button>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="flex justify-center mb-4">
-                  {getStatusIcon()}
+              ) : (
+                <div className="text-center py-6">
+                  {transactionStatus === "pending" && (
+                    <div className="space-y-4">
+                      <Loader2 className="w-8 h-8 animate-spin text-indigo-600 dark:text-indigo-400 mx-auto" />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+                          {getStatusMessage()}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                          Please wait while we confirm your transaction
+                        </p>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                          <div
+                            className="bg-indigo-600 dark:bg-indigo-400 h-1.5 rounded-full transition-all duration-300"
+                            style={{
+                              width: `${Math.min(
+                                (pollingCount / 60) * 100,
+                                100
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {transactionStatus === "success" && (
+                    <div className="space-y-4">
+                      <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto">
+                        <Check className="w-6 h-6 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                          {getStatusMessage()}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {formatAmount(amount)} {currency} has been transferred
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {(transactionStatus === "failed" ||
+                    transactionStatus === "creating") && (
+                    <div className="space-y-4">
+                      <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
+                        <X className="w-6 h-6 text-red-600 dark:text-red-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                          {getStatusMessage()}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                          Something went wrong. Please try again.
+                        </p>
+                        <button
+                          onClick={closeDialog}
+                          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium text-sm"
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <p className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">
-                  {getStatusText()}
-                </p>
-                {transactionStatus === "processing" && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Please wait while we confirm your transaction...
-                  </p>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
     </>
   );
 };
+
 export default PaymentButton;

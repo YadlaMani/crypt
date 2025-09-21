@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { chains } from "@/utils/chain";
-import Link from "next/link";
 import getButtonComponentById from "@/utils/buttonComponentCode";
 import PaymentButton from "@/components/PaymentButtonPage";
 import { Download, Check, Copy, X } from "lucide-react";
@@ -135,6 +134,9 @@ export default function ButtonDetailsPage() {
             <PaymentButton
               buttonId={button._id}
               onTransactionStateChange={handleTransactionStateChange}
+              amount={button.amount}
+              currency="USDC"
+              merchantName={button.name}
             />
           </div>
 
