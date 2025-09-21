@@ -40,8 +40,8 @@ export function ButtonList({ buttons, loading }: ButtonListProps) {
         >
           <h2 className="font-medium">{btn.name}</h2>
           <p className="text-sm text-muted-foreground">{btn.description}</p>
-          <p className="text-sm">Amount: ${btn.amount}</p>
-          <p className="text-sm">Chain ID: {btn.chainId}</p>
+          <p className="text-sm">Amount: ${(btn.amountUsd || (btn as any).amount || 0).toFixed(2)} USD</p>
+          <p className="text-sm">Chains: {btn.chainId.length} selected</p>
           <p className="text-sm">Merchant: {btn.merchantAddress}</p>
           <Link href={`/buttons/${btn._id}`}>
             <Button>View</Button>

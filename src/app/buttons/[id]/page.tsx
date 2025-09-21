@@ -25,7 +25,7 @@ type ButtonType = {
   _id: string;
   name: string;
   description?: string;
-  amount: number;
+  amountUsd: number;
   tokenAddress?: string;
   chainId: string[];
   merchantAddress: string;
@@ -102,7 +102,7 @@ export default function ButtonDetailsPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <p>
-              <span className="font-medium">Amount:</span> {button.amount}
+              <span className="font-medium">Amount:</span> ${(button.amountUsd || (button as any).amount || 0).toFixed(2)} USD
             </p>
             <p>
               <span className="font-medium">Chains:</span>{" "}

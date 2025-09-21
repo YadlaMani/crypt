@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -32,18 +32,21 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
   const [form, setForm] = useState<{
     name: string;
     description: string;
-    amount: string;
+    amountUsd: string;
     tokenAddress: string;
     chainId: string[];
     merchantAddress: string;
   }>({
     name: "",
     description: "",
-    amount: "",
+    amountUsd: "",
     tokenAddress: "",
     chainId: [],
     merchantAddress: "",
   });
+
+  const [pricePreview, setPricePreview] = useState<Record<string, any>>({});
+  const [loadingPrices, setLoadingPrices] = useState(false);
 
   const handleChange = (key: string, value: string | string[]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -53,12 +56,60 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
     setForm({
       name: "",
       description: "",
-      amount: "",
+      amountUsd: "",
       tokenAddress: "",
       chainId: [],
       merchantAddress: "",
     });
+    setPricePreview({});
   };
+
+  // Fetch price preview when USD amount or chains change
+  const fetchPricePreview = async () => {
+    if (!form.amountUsd || form.chainId.length === 0) {
+      console.log('No amount or chains, clearing preview');
+      setPricePreview({});
+      return;
+    }
+
+    const usdAmount = parseFloat(form.amountUsd);
+    if (isNaN(usdAmount) || usdAmount <= 0) {
+      console.log('Invalid amount, clearing preview');
+      setPricePreview({});
+      return;
+    }
+
+    console.log('Fetching price preview for:', { usdAmount, chains: form.chainId });
+    setLoadingPrices(true);
+    try {
+      const response = await fetch(`/api/prices?amount=${usdAmount}`);
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+      
+      if (data.success && data.data && data.data.conversions) {
+        console.log('Setting price preview:', data.data.conversions);
+        setPricePreview(data.data.conversions);
+      } else {
+        console.error('Invalid response structure:', data);
+        setPricePreview({});
+      }
+    } catch (error) {
+      console.error('Error fetching price preview:', error);
+      setPricePreview({});
+    } finally {
+      setLoadingPrices(false);
+    }
+  };
+
+  // Use effect to fetch prices when form changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchPricePreview();
+    }, 500); // Debounce for 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [form.amountUsd, form.chainId]);
 
   const handleSubmit = async () => {
     if (!user) return;
@@ -68,7 +119,7 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
       const res = await createButtonAction({
         name: form.name,
         description: form.description,
-        amount: parseFloat(form.amount),
+        amountUsd: parseFloat(form.amountUsd),
         chainId: form.chainId,
         merchantAddress: form.merchantAddress,
         userId: user.id,
@@ -126,12 +177,18 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
             />
           </div>
           <div>
-            <Label>Amount</Label>
+            <Label>Amount (USD)</Label>
             <Input
               type="number"
-              value={form.amount}
-              onChange={(e) => handleChange("amount", e.target.value)}
+              step="0.01"
+              min="0.01"
+              placeholder="10.00"
+              value={form.amountUsd}
+              onChange={(e) => handleChange("amountUsd", e.target.value)}
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Enter the USD amount customers will pay
+            </p>
           </div>
 
           {/* Chain Selection with Checkbox */}
@@ -158,8 +215,48 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
             <Input
               value={form.merchantAddress}
               onChange={(e) => handleChange("merchantAddress", e.target.value)}
+              placeholder="0x..."
             />
           </div>
+
+          {/* Live Price Preview */}
+          {form.amountUsd && form.chainId.length > 0 && (
+            <div className="border rounded-lg p-4 bg-muted/30">
+              <Label className="text-sm font-medium">Live Price Preview</Label>
+              {loadingPrices ? (
+                <div className="mt-2 space-y-2">
+                  {form.chainId.map((chainId) => (
+                    <div key={chainId} className="animate-pulse">
+                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-2 space-y-1 text-sm">
+                  {form.chainId.map((chainId) => {
+                    const chainName = chains.find(c => c.id === chainId)?.name || chainId;
+                    const priceInfo = pricePreview[chainId];
+                    
+                    return (
+                      <div key={chainId} className="flex justify-between">
+                        <span>{chainName}:</span>
+                        {priceInfo ? (
+                          <span className="font-mono">
+                            {priceInfo.nativeAmount.toFixed(6)} {priceInfo.tokenSymbol}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">Loading...</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  <div className="text-xs text-muted-foreground mt-2">
+                    💡 Prices update in real-time via Pyth Network
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button onClick={handleSubmit} disabled={submitting}>
