@@ -151,7 +151,7 @@ export default function ButtonDetailsPage() {
 
           <div>
             <p className="font-medium text-sm">Amount</p>
-            <p className="text-lg font-semibold">{button.amount} ETH</p>
+            <p className="text-lg font-semibold">{button.amount} $</p>
           </div>
 
           <div>

@@ -50,7 +50,7 @@ export default function ButtonsPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Payment Buttons</h1>
-        <CreateButtonDialog onCreated={() => fetchButtons()} />
+        <CreateButtonDialog onCreated={fetchButtons} />
       </div>
       <ButtonList buttons={buttons} loading={loading} />
     </div>

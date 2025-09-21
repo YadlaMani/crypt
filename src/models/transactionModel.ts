@@ -4,6 +4,11 @@ const TransactionSchema = new mongoose.Schema({
   to: { type: String, required: true },
   signature: { type: String, required: true },
   time: { type: Date, default: Date.now },
+  status: {
+    type: String,
+    enum: ["pending", "completed", "failed"],
+    default: "pending",
+  },
   buttonId: { type: mongoose.Schema.Types.ObjectId, ref: "Button" },
 });
 const Transaction =

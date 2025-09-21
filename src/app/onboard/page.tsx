@@ -11,7 +11,7 @@ const OnBoardPage = async () => {
   if (!user) redirect("/sign-in");
   //fetch profile info
   const res = await fetchProfileAction(user?.id);
-  const profileInfo = res.ok ? await res.json() : null;
+  const profileInfo = res.success ? res.profile : null;
 
   if (profileInfo) {
     redirect("/");
