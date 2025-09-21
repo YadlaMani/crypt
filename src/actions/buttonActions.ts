@@ -16,7 +16,7 @@ export async function getUserButtons(userId: string) {
     }
     return {
       success: true,
-      buttons: buttons as ButtonType[],
+      buttons: JSON.parse(JSON.stringify(buttons)) as ButtonType[],
     };
   } catch (err) {
     console.error("Error fetching buttons:", err);
@@ -31,7 +31,7 @@ export async function getUserButtons(userId: string) {
 export async function createButton(data: {
   name: string;
   description: string;
-  amount: number;
+  amountUsd: number;
   chainId: string[];
   merchantAddress: string;
   userId: string;
@@ -42,7 +42,7 @@ export async function createButton(data: {
     const newButton = new Button({
       name: data.name,
       description: data.description,
-      amount: data.amount,
+      amountUsd: data.amountUsd,
       chainId: data.chainId,
       merchantAddress: data.merchantAddress,
       userId: data.userId,
@@ -79,7 +79,7 @@ export async function getButtonById(buttonId: string) {
 
     return {
       success: true,
-      button,
+      button: JSON.parse(JSON.stringify(button)),
       message: "Button fetched successfully",
     };
   } catch (err) {

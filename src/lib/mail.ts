@@ -6,7 +6,7 @@ const transporter = nodemailer.createTransport({
   secure: true,
   auth: {
     user: "cryptonite.devv@gmail.com",
-    pass: process.env.MAIL_PASS,
+    pass: process.env.MAIL_PASS || "http://localhost:3000",
   },
 });
 
@@ -16,7 +16,7 @@ export const sendTransactionMail = async (
   transactionId: string
 ) => {
   try {
-    const payUrl = `${process.env.WEBSITE}/pay/${transactionId}`;
+    const payUrl = `${process.env.API_URL}/pay/${transactionId}`;
 
     const mailOptions = {
       from: `"Cryptonite" <cryptonite.devv@gmail.com>`,
