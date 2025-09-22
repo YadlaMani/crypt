@@ -8,7 +8,7 @@ type TransactionState = "success" | "failed" | "timeout" | "error";
 
 interface PaymentButtonProps {
   buttonId: string;
-  amount: number;
+  amountUsd: number;
   currency?: string;
   merchantName?: string;
   onTransactionStateChange?: (
@@ -20,7 +20,7 @@ interface PaymentButtonProps {
 const PaymentButton: React.FC<PaymentButtonProps> = ({
   onTransactionStateChange,
   buttonId,
-  amount,
+  amountUsd,
   currency = "USDC",
   merchantName = "Merchant",
 }) => {
@@ -31,11 +31,11 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [pollingCount, setPollingCount] = useState(0);
 
-  const formatAmount = (amount: number) => {
+  const formatAmount = (amountUsd: number) => {
     return new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 6,
-    }).format(amount);
+    }).format(amountUsd);
   };
 
   const handlePayment = async () => {
@@ -45,16 +45,17 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     }
 
     setIsProcessing(true);
-    setTransactionStatus("creating");
+    setTransactionStatus("pending");
 
     try {
       const response = await fetch(`/api/create-transaction`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ buttonId, cryptoId, amount, currency }),
+        body: JSON.stringify({ buttonId, cryptoId, amountUsd, currency }),
       });
 
       const { transactionId } = await response.json();
+      setTransactionStatus("pending");
       pollTransactionStatus(transactionId);
     } catch (error) {
       setTransactionStatus("failed");
@@ -134,7 +135,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         onClick={() => setIsOpen(true)}
         className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-md transition-colors duration-150"
       >
-        Pay {formatAmount(amount)} {currency}
+        Pay {formatAmount(amountUsd)} {currency}
       </button>
 
       {isOpen && (
@@ -165,7 +166,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
                     Total
                   </span>
                   <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                    {formatAmount(amount)} {currency}
+                    {formatAmount(amountUsd)} {currency}
                   </span>
                 </div>
               </div>
@@ -201,7 +202,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
                         Processing
                       </span>
                     ) : (
-                      `Pay ${formatAmount(amount)} ${currency}`
+                      `Pay ${formatAmount(amountUsd)} ${currency}`
                     )}
                   </button>
                 </div>
@@ -242,7 +243,8 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
                           {getStatusMessage()}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {formatAmount(amount)} {currency} has been transferred
+                          {formatAmount(amountUsd)} {currency} has been
+                          transferred
                         </p>
                       </div>
                     </div>

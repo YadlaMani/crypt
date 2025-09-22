@@ -8,11 +8,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { chains } from "@/utils/chain";
 import getButtonComponentById from "@/utils/buttonComponentCode";
 import PaymentButton from "@/components/PaymentButtonPage";
-import { Download, Check, Copy, X } from "lucide-react";
+import { Download, Check, Copy } from "lucide-react";
+
 type Transaction = {
   _id: string;
   from: string;
@@ -32,21 +40,26 @@ type ButtonType = {
   isActive: boolean;
   transactions: Transaction[];
 };
+
 type TransactionState = "success" | "failed" | "timeout" | "error";
+
 export default function ButtonDetailsPage() {
   const { id } = useParams();
   const [button, setButton] = useState<ButtonType | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [copied, setCopied] = useState(false);
+
   const buttonComponentCode = getButtonComponentById(id as string);
+
   const handleTransactionStateChange = (
     state: TransactionState,
     transactionId: string
-  ): void => {
+  ) => {
     toast.message(`Transaction ${state}: ${transactionId}`);
   };
-  const copyToClipboard = async (): Promise<void> => {
+
+  const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(buttonComponentCode);
       setCopied(true);
@@ -68,7 +81,7 @@ export default function ButtonDetailsPage() {
         } else {
           toast.message("Invalid url or something went wrong");
         }
-      } catch (err) {
+      } catch {
         toast.message("Error fetching button details");
       } finally {
         setLoading(false);
@@ -85,12 +98,10 @@ export default function ButtonDetailsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-8">
-      <Card className="shadow-md rounded-2xl">
+      <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle className="text-xl font-semibold">
-              {button.name}
-            </CardTitle>
+            <CardTitle>{button.name}</CardTitle>
             <Badge variant={button.isActive ? "default" : "secondary"}>
               {button.isActive ? "Active" : "Inactive"}
             </Badge>
@@ -122,27 +133,23 @@ export default function ButtonDetailsPage() {
               {button.merchantAddress}
             </p>
           </div>
+
           <Separator />
+
           <div className="flex gap-3">
-            <Button
-              onClick={() => setShowDialog(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              <Download className="h-4 w-4" />
+            <Button onClick={() => setShowDialog(true)}>
+              <Download className="h-4 w-4 mr-2" />
               Export Button Component
             </Button>
 
-            {/* Demo Payment Button */}
             <PaymentButton
               buttonId={button._id}
               onTransactionStateChange={handleTransactionStateChange}
-              amount={button.amountUsd}
+              amountUsd={button.amountUsd}
               currency="USDC"
               merchantName={button.name}
             />
           </div>
-
-          <Separator />
 
           <Separator />
 
@@ -155,10 +162,7 @@ export default function ButtonDetailsPage() {
             ) : (
               <div className="space-y-2">
                 {button.transactions.map((tx) => (
-                  <div
-                    key={tx._id}
-                    className="p-3 border rounded-lg text-sm bg-muted/30"
-                  >
+                  <Card key={tx._id} className="p-3">
                     <p>
                       <span className="font-medium">From:</span> {tx.from}
                     </p>
@@ -172,84 +176,61 @@ export default function ButtonDetailsPage() {
                     <p className="text-xs text-muted-foreground">
                       {new Date(tx.time).toLocaleString()}
                     </p>
-                  </div>
+                  </Card>
                 ))}
               </div>
             )}
           </div>
         </CardContent>
       </Card>
-      {showDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-80vh overflow-hidden">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">
-                Copy Payment Button Component
-              </h3>
-              <button
-                onClick={() => setShowDialog(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
 
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">
-                Copy this React component to integrate the payment button into
-                your application:
-              </p>
-              <div className="flex gap-2 mb-3">
-                <button
-                  onClick={copyToClipboard}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                  {copied ? "Copied!" : "Copy Code"}
-                </button>
-              </div>
-            </div>
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Copy Payment Button Component</DialogTitle>
+          </DialogHeader>
 
-            <div className="bg-gray-100 rounded-lg p-4 max-h-96 overflow-y-auto">
-              <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
-                {buttonComponentCode}
-              </pre>
-            </div>
+          <p className="text-sm text-muted-foreground mb-2">
+            Copy this React component to integrate the payment button into your
+            application:
+          </p>
 
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">
-                Integration Notes:
-              </h4>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>
-                  • Replace the API endpoints with your actual backend URLs
-                </li>
-                <li>
-                  • The component has no external dependencies (no shadcn/ui or
-                  Lucide React)
-                </li>
-                <li>• Uses native SVG icons and pure CSS animations</li>
-                <li>
-                  • The onTransactionStateChange callback will notify you of
-                  payment status
-                </li>
-                <li>
-                  • Transaction polling runs for 5 minutes (60 polls × 5
-                  seconds)
-                </li>
-                <li>
-                  • Make sure to handle the transaction states in your merchant
-                  application
-                </li>
-              </ul>
-            </div>
+          <Button size="sm" onClick={copyToClipboard} className="mb-3">
+            {copied ? (
+              <Check className="h-4 w-4 mr-2" />
+            ) : (
+              <Copy className="h-4 w-4 mr-2" />
+            )}
+            {copied ? "Copied!" : "Copy Code"}
+          </Button>
+
+          <ScrollArea className="h-64 w-full rounded-md border p-4">
+            <pre className="text-sm font-mono whitespace-pre-wrap">
+              {buttonComponentCode}
+            </pre>
+          </ScrollArea>
+
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">
+              Integration Notes:
+            </h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>
+                • The onTransactionStateChange callback will notify you of
+                payment status
+              </li>
+              <li>
+                • Transaction polling runs for 10 minutes (60 polls × 10
+                seconds)
+              </li>
+              <li>
+                • Make sure to handle the transaction states in your merchant
+                application
+              </li>
+            </ul>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

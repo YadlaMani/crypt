@@ -10,7 +10,7 @@ const TransactionSchema = new mongoose.Schema({
     default: "pending",
   },
   buttonId: { type: mongoose.Schema.Types.ObjectId, ref: "Button" },
-  amount: { type: Number, required: true },
+  amountUsd: { type: Number, required: true },
 });
 const Transaction =
   mongoose.models.Transaction ||

@@ -15,6 +15,14 @@ export async function GET(req: NextRequest) {
         { status: 404 }
       );
     }
+    const txTime = new Date(transaction.time).getTime();
+    const now = Date.now();
+    const diffMinutes = (now - txTime) / (1000 * 60);
+
+    if (diffMinutes > 10 && transaction.status === "pending") {
+      transaction.status = "failed";
+      await transaction.save();
+    }
     console.log(transaction);
     return NextResponse.json({ status: transaction.status });
   } catch (err) {
