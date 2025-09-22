@@ -68,7 +68,7 @@ export async function createButton(data: {
 export async function getButtonById(buttonId: string) {
   try {
     await connectToDB();
-    const button = await Button.findById(buttonId);
+    const button = await Button.findById(buttonId).populate("transactions");
 
     if (!button) {
       return {

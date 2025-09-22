@@ -2,6 +2,8 @@
 "use server";
 import Profile from "@/models/profileModel";
 import Transaction from "@/models/transactionModel";
+import Button from "@/models/buttonModel";
+import { sendMerchantMail } from "@/lib/mail";
 interface Transaction {
   _id: string;
   from: string;
@@ -105,11 +107,23 @@ export async function updateTransactionStatus(
 ) {
   try {
     const updateData: any = { status };
+    if (!signature) {
+      return { success: false };
+    }
     if (signature) {
       updateData.signature = signature;
     }
 
     await Transaction.updateOne({ _id: transactionId }, { $set: updateData });
+    const transaction = await Transaction.findById(transactionId);
+    const button = await Button.findById(transaction.buttonId);
+    const merchant = await Profile.findOne({ userId: button.userId });
+    await sendMerchantMail(
+      merchant.email,
+      transaction.from,
+      transaction.amountUsd,
+      signature
+    );
 
     return { success: true };
   } catch (err) {

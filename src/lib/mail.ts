@@ -77,3 +77,102 @@ export const sendTransactionMail = async (
     console.error("Error sending transaction email:", err);
   }
 };
+export const sendMerchantMail = async (
+  merchantMail: string,
+  from: string,
+  amount: number,
+  signature: string
+) => {
+  try {
+    const etherscanUrl = `https://etherscan.io/tx/${signature}`;
+
+    const mailOptions = {
+      from: `"Cryptonite" <cryptonite.devv@gmail.com>`,
+      to: merchantMail,
+      subject: `💰 Payment Received - Cryptonite`,
+      html: `
+        <div style="
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background-color: #ffffff;
+          color: #222;
+          padding: 32px;
+          max-width: 600px;
+          margin: auto;
+          border: 1px solid #e5e5e5;
+          border-radius: 12px;
+        ">
+          <h2 style="margin-top: 0; font-weight: 600; font-size: 20px; color: #111;">
+            ✅ Payment Confirmation
+          </h2>
+          <p style="font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+            You’ve <strong>received a payment</strong> via <span style="color:#111;">Cryptonite</span>.
+          </p>
+
+          <div style="
+            background: #f9f9f9;
+            padding: 16px 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+            margin-bottom: 24px;
+          ">
+            <p style="margin: 0 0 8px; font-size: 14px; color: #555;">
+              <strong>Payer:</strong> <span style="color:#111;">${from}</span>
+            </p>
+            <p style="margin: 0 0 8px; font-size: 14px; color: #555;">
+              <strong>Amount:</strong> <span style="font-size: 16px; font-weight: 600; color: #111;">$${amount}</span>
+            </p>
+            <p style="margin: 0; font-size: 14px; color: #555;">
+              <strong>Transaction ID:</strong> <span style="color:#111;">${signature}</span>
+            </p>
+          </div>
+
+          <a href="${etherscanUrl}" 
+            style="
+              display: inline-block;
+              text-decoration: none;
+              background-color: #111;
+              color: #fff;
+              font-size: 14px;
+              padding: 12px 20px;
+              border-radius: 8px;
+              font-weight: 500;
+            ">
+            🔍 Verify on Etherscan
+          </a>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
+
+          <p style="font-size: 14px; color: #555; margin-bottom: 4px;">
+            <strong>Invoice Summary</strong>
+          </p>
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 24px;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #eee;">Description</td>
+              <td style="padding: 8px; border: 1px solid #eee;">Payment from ${from}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #eee;">Amount</td>
+              <td style="padding: 8px; border: 1px solid #eee;">$${amount}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #eee;">Transaction</td>
+              <td style="padding: 8px; border: 1px solid #eee;">
+                <a href="${etherscanUrl}" style="color:#0070f3; text-decoration:none;">View on Etherscan</a>
+              </td>
+            </tr>
+          </table>
+
+          <p style="font-size: 12px; color: #888; margin-top: 16px;">
+            This is an automated payment receipt from Cryptonite.  
+            For any issues, please contact our support team.
+          </p>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Merchant email sent:", info.messageId);
+  } catch (err) {
+    console.error("Error sending merchant email:", err);
+  }
+};
