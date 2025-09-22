@@ -83,56 +83,15 @@ export async function getTransactionById(transactionId: string) {
       );
       transaction.status = "failed";
     }
-    if (transaction.status === "pending") {
-      return {
-        success: true,
-        transaction: JSON.parse(JSON.stringify(transaction)),
-      };
-    }
+    return {
+      success: true,
+      transaction: JSON.parse(JSON.stringify(transaction)),
+    };
   } catch (err) {
     console.error(err);
     return {
       success: false,
       error: "Failed to fetch transaction",
-      details: err instanceof Error ? err.message : err,
-    };
-  }
-}
-export async function fetchUserTransactions(userId: string) {
-  try {
-    const profile = await Profile.findOne({ userId: userId });
-    if (!profile) {
-      return {
-        success: false,
-        error: "Profile not found",
-        details: "No profile associated with this user",
-      };
-    }
-    const transactions = (await Transaction.find({ from: profile.email })).sort(
-      (a, b) => b.time.getTime() - a.time.getTime()
-    );
-    for (let i = 0; i < transactions.length; i++) {
-      if (
-        Date.now() - new Date(transactions[i].time).getTime() >
-          10 * 60 * 1000 &&
-        transactions[i].status === "pending"
-      ) {
-        await Transaction.updateOne(
-          { _id: transactions[i]._id },
-          { $set: { status: "failed" } }
-        );
-        transactions[i].status = "failed";
-      }
-    }
-
-    return {
-      success: true,
-      transactions: JSON.parse(JSON.stringify(transactions)) as Transaction[],
-    };
-  } catch (err) {
-    return {
-      success: false,
-      error: "Failed to fetch transactions",
       details: err instanceof Error ? err.message : err,
     };
   }
