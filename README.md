@@ -539,16 +539,6 @@ npm start
 - **AWS/Digital Ocean** - Full Node.js server support
 - **Docker** - Containerized deployment ready
 
-## Contributing
-
-We welcome contributions that help make crypto payments more accessible:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## The Vision
 
 One button that works everywhere.
@@ -560,17 +550,6 @@ A standard for how payments should be: simple, transparent, and human.
 
 With Cryptonite, we're not just building a product.
 We're reimagining commerce itself.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Support
-
-- **Documentation**: [docs.cryptonite.com](https://docs.cryptonite.com)
-- **Community**: [Discord](https://discord.gg/cryptonite)
-- **Email**: support@cryptonite.com
-- **Issues**: [GitHub Issues](https://github.com/YadlaMani/crypt/issues)
 
 ---
 
