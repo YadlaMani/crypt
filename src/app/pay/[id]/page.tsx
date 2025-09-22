@@ -349,7 +349,7 @@ export default function Page() {
       
       // Update transaction status in database
       updateTransactionStatus(transaction._id, "success", hash)
-        .then((result) => {
+        .then((result: any) => {
           if (result.success) {
             console.log("Transaction status updated to success");
             // Update local transaction state instead of refetching
@@ -358,7 +358,7 @@ export default function Page() {
             console.error("Failed to update transaction status:", result.error);
           }
         })
-        .catch((error) => {
+        .catch((error: any) => {
           console.error("Error updating transaction status:", error);
         });
     }
@@ -405,7 +405,7 @@ export default function Page() {
       
       // Update transaction status in database
       updateTransactionStatus(transaction._id, "success", contractHash)
-        .then((result) => {
+        .then((result: any) => {
           if (result.success) {
             console.log("Transaction status updated to success");
             // Update local transaction state instead of refetching
@@ -414,7 +414,7 @@ export default function Page() {
             console.error("Failed to update transaction status:", result.error);
           }
         })
-        .catch((error) => {
+        .catch((error: any) => {
           console.error("Error updating transaction status:", error);
         });
     }
@@ -800,7 +800,7 @@ export default function Page() {
                   </div>
                 )}
 
-                {priceData.length > 0 && (
+                {transaction?.status !== "success" && priceData.length > 0 && (
                   <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                     <p className="text-sm text-blue-800 dark:text-blue-200">
                       🔄 Prices update every 30 seconds via Pyth Network
@@ -812,7 +812,7 @@ export default function Page() {
                 )}
 
                 {/* Transaction Status */}
-                {activeTransaction && (isPending || isConfirming || isConfirmed || isContractPending || isContractConfirming || isContractConfirmed) && (
+                {transaction?.status !== "success" && activeTransaction && (isPending || isConfirming || isConfirmed || isContractPending || isContractConfirming || isContractConfirmed) && (
                   <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                     <h4 className="font-medium mb-2">Transaction Status</h4>
                     

@@ -96,3 +96,26 @@ export async function getTransactionById(transactionId: string) {
     };
   }
 }
+
+export async function updateTransactionStatus(transactionId: string, status: string, signature?: string) {
+  try {
+    const updateData: any = { status };
+    if (signature) {
+      updateData.signature = signature;
+    }
+    
+    await Transaction.updateOne(
+      { _id: transactionId },
+      { $set: updateData }
+    );
+    
+    return { success: true };
+  } catch (err) {
+    console.error(err);
+    return {
+      success: false,
+      error: "Failed to update transaction status",
+      details: err instanceof Error ? err.message : err,
+    };
+  }
+}
