@@ -11,5 +11,5 @@ export default async function Home() {
   const profileInfo = res.success ? await res.profile : null;
   if (user && !profileInfo) redirect("/onboard");
 
-  return <MainDashboard profileId={profileInfo._id} />;
+  return <MainDashboard profileId={profileInfo._id.toString()} />;
 }
