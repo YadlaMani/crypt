@@ -62,7 +62,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                   <SignedIn>
                     <ConnectButton />
                     <Link href="/buttons">Buttons</Link>
-                    <Link href="/payments">Payments</Link>
+                    <Link href="/history">History</Link>
                     <Link href="/settings">Settings</Link>
                     <UserButton />
                     <SignOutButton>
@@ -96,8 +96,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     <Link href="/buttons" onClick={() => setOpen(false)}>
                       Buttons
                     </Link>
-                    <Link href="/payments" onClick={() => setOpen(false)}>
-                      Payments
+                    <Link href="/history" onClick={() => setOpen(false)}>
+                      History
                     </Link>
                     <Link href="/settings" onClick={() => setOpen(false)}>
                       Settings
