@@ -15,7 +15,7 @@ interface Transaction {
   _id: string;
   from: string;
   to: string;
-  amount: number;
+  amountUsd: number;
   status: "pending" | "success" | "failed";
   buttonId?: string;
 }
@@ -60,9 +60,9 @@ const MainDashboard: React.FC<MainDashboardProps> = ({ profileId }) => {
               <strong>To:</strong> {latestTransaction.to}
             </p>
             <p>
-              <strong>Amount:</strong> ${latestTransaction.amount}
+              <strong>Amount:</strong> ${latestTransaction.amountUsd}
             </p>
-            <p className="mt-2 text-muted">
+            <p className="mt-2">
               You have a recent transaction pending. Click below to complete the
               payment.
             </p>

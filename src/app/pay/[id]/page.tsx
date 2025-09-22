@@ -25,6 +25,10 @@ export default function Page() {
   const fetchTransaction = async () => {
     setLoading(true);
     const res = await getTransactionById(id as string);
+    if (!res) {
+      setError("No response from server");
+      return;
+    }
     if (res.success && res.transaction) {
       setTransaction(res.transaction);
       setError(null);

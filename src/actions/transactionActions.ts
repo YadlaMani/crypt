@@ -70,10 +70,12 @@ export async function getTransactionById(transactionId: string) {
       );
       transaction.status = "failed";
     }
-    return {
-      success: true,
-      transaction: JSON.parse(JSON.stringify(transaction)),
-    };
+    if (transaction.status === "pending") {
+      return {
+        success: true,
+        transaction: JSON.parse(JSON.stringify(transaction)),
+      };
+    }
   } catch (err) {
     console.error(err);
     return {
