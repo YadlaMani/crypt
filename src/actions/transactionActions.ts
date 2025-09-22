@@ -55,10 +55,13 @@ export async function getUserTransactions(userId: string) {
 
 export async function getTransactionById(transactionId: string) {
   try {
-    const transaction = await Transaction.findById(transactionId);
+    const transaction = await Transaction.findById(transactionId).populate(
+      "buttonId"
+    );
     if (!transaction) {
       return { success: false, transaction: null };
     }
+    console.log(transaction);
     if (
       transaction.time &&
       Date.now() - new Date(transaction.time).getTime() > 10 * 60 * 1000 &&
