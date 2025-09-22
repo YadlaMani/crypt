@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -18,9 +17,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { createButton as createButtonAction } from "@/actions/buttonActions";
 import { useUser } from "@clerk/nextjs";
-import { ButtonType } from "@/types/button";
 import { chains } from "@/utils/chain";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, CreditCard } from "lucide-react";
 
 type CreateButtonDialogProps = {
   onCreated: () => Promise<void>;
@@ -46,7 +45,7 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
     merchantAddress: "",
   });
 
-  const [pricePreview, setPricePreview] = useState<Record<string, any>>({});
+  const [pricePreview, setPricePreview] = useState<Record<string, { nativeAmount: number; tokenSymbol: string }>>({});
   const [loadingPrices, setLoadingPrices] = useState(false);
 
   const handleChange = (key: string, value: string | string[]) => {
@@ -66,7 +65,7 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
   };
 
   // Fetch price preview when USD amount or chains change
-  const fetchPricePreview = async () => {
+  const fetchPricePreview = useCallback(async () => {
     if (!form.amountUsd || form.chainId.length === 0) {
       console.log("No amount or chains, clearing preview");
       setPricePreview({});
@@ -104,7 +103,7 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
     } finally {
       setLoadingPrices(false);
     }
-  };
+  }, [form.amountUsd, form.chainId]);
 
   // Use effect to fetch prices when form changes
   useEffect(() => {
@@ -113,7 +112,7 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
     }, 500); // Debounce for 500ms
 
     return () => clearTimeout(timeoutId);
-  }, [form.amountUsd, form.chainId]);
+  }, [fetchPricePreview]);
 
   const handleSubmit = async () => {
     if (!user) return;
@@ -159,29 +158,37 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Create Button</Button>
+        <Button>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Button
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-5xl max-h-[98vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create a Payment Button</DialogTitle>
+          <DialogTitle className="text-xl font-bold flex items-center">
+            <CreditCard className="h-5 w-5 mr-2 text-primary" />
+            Create a Payment Button
+          </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <div className="space-y-3 py-1">
           <div>
-            <Label>Name</Label>
+            <Label className="font-medium">Button Name</Label>
             <Input
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
+              placeholder="e.g., Premium Subscription"
             />
           </div>
           <div>
-            <Label>Description</Label>
+            <Label className="font-medium">Description</Label>
             <Textarea
               value={form.description}
               onChange={(e) => handleChange("description", e.target.value)}
+              placeholder="Describe what this payment is for..."
             />
           </div>
           <div>
-            <Label>Amount (USD)</Label>
+            <Label className="font-medium">Amount (USD)</Label>
             <Input
               type="number"
               step="0.01"
@@ -197,57 +204,61 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
 
           {/* Chain Selection with Checkbox */}
           <div>
-            <Label>Chains</Label>
-            <div className="flex flex-col gap-2 mt-2">
+            <Label className="font-medium">Supported Chains</Label>
+            <div className="grid grid-cols-2 gap-3 mt-3">
               {chains.map((chain) => (
                 <label
                   key={chain.id}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex items-center gap-3 cursor-pointer p-3 bg-muted rounded-lg border hover:border-primary transition-colors duration-300"
                 >
                   <Checkbox
                     checked={form.chainId.includes(chain.id)}
                     onCheckedChange={() => toggleChain(chain.id)}
                   />
-                  <span>{chain.name}</span>
+                  <span className="text-foreground">{chain.name}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div>
-            <Label>Merchant Address</Label>
+            <Label className="font-medium">Merchant Address</Label>
             <Input
               value={form.merchantAddress}
               onChange={(e) => handleChange("merchantAddress", e.target.value)}
               placeholder="0x..."
+              className="font-mono"
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Your wallet address where payments will be sent
+            </p>
           </div>
 
           {/* Live Price Preview */}
           {form.amountUsd && form.chainId.length > 0 && (
-            <div className="border rounded-lg p-4 bg-muted/30">
-              <Label className="text-sm font-medium">Live Price Preview</Label>
+            <div className="border border-border rounded-lg p-2 bg-muted/50">
+              <Label className="text-xs font-medium text-primary">Live Price Preview</Label>
               {loadingPrices ? (
-                <div className="mt-2 space-y-2">
+                <div className="mt-1 space-y-1">
                   {form.chainId.map((chainId) => (
                     <div key={chainId} className="animate-pulse">
-                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                      <div className="h-2 bg-muted rounded w-3/4"></div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="mt-2 space-y-1 text-sm">
+                <div className="mt-1 space-y-1 text-xs">
                   {form.chainId.map((chainId) => {
                     const chainName =
                       chains.find((c) => c.id === chainId)?.name || chainId;
                     const priceInfo = pricePreview[chainId];
 
                     return (
-                      <div key={chainId} className="flex justify-between">
-                        <span>{chainName}:</span>
+                      <div key={chainId} className="flex justify-between items-center">
+                        <span className="text-muted-foreground">{chainName}:</span>
                         {priceInfo ? (
-                          <span className="font-mono">
-                            {priceInfo.nativeAmount.toFixed(6)}{" "}
+                          <span className="font-mono text-foreground bg-muted px-1 py-0.5 rounded text-xs">
+                            {priceInfo.nativeAmount.toFixed(4)}{" "}
                             {priceInfo.tokenSymbol}
                           </span>
                         ) : (
@@ -258,17 +269,27 @@ export function CreateButtonDialog({ onCreated }: CreateButtonDialogProps) {
                       </div>
                     );
                   })}
-                  <div className="text-xs text-muted-foreground mt-2">
-                    💡 Prices update in real-time via Pyth Network
+                  <div className="text-xs text-primary mt-1 flex items-center">
+                    <span className="mr-1">💡</span>
+                    Real-time prices via Pyth Network
                   </div>
                 </div>
               )}
             </div>
           )}
         </div>
-        <DialogFooter>
-          <Button onClick={handleSubmit} disabled={submitting}>
-            {submitting ? "Creating..." : "Create"}
+        <DialogFooter className="gap-3">
+          <Button 
+            variant="outline" 
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={submitting}
+          >
+            {submitting ? "Creating..." : "Create Button"}
           </Button>
         </DialogFooter>
       </DialogContent>

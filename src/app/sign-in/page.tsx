@@ -1,5 +1,168 @@
-import { SignIn } from "@clerk/nextjs";
+"use client";
 
-export default function Page() {
-  return <SignIn />;
+import { SignIn } from "@clerk/nextjs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { 
+  ArrowLeft, 
+  Cpu, 
+  Sparkles, 
+  Shield, 
+  Zap, 
+  Globe, 
+  Lock
+} from "lucide-react";
+import Link from "next/link";
+
+const features = [
+  {
+    icon: <Shield className="h-6 w-6" />,
+    title: "Enterprise Security",
+    description: "Bank-grade security with multi-signature wallets"
+  },
+  {
+    icon: <Zap className="h-6 w-6" />,
+    title: "Lightning Fast",
+    description: "Process payments in seconds"
+  },
+  {
+    icon: <Globe className="h-6 w-6" />,
+    title: "Global Reach",
+    description: "Accept payments from anywhere in the world"
+  }
+];
+
+export default function SignInPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white">
+      {/* Navigation */}
+      <nav className="border-b border-gray-800/50 bg-black/20 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+                <Cpu className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Cryptonite
+              </span>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="border-gray-600 text-gray-300 hover:text-white hover:border-blue-500 hover:bg-blue-500/10 group">
+                <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-12 lg:py-20">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center max-w-7xl mx-auto">
+          {/* Left Side - Features */}
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <Badge variant="secondary" className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 border-blue-500/30 text-lg px-6 py-3 w-fit">
+                <Sparkles className="h-5 w-5 mr-2" />
+                Welcome Back
+              </Badge>
+              <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+                <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">
+                  Sign in to your
+                </span>
+                <br />
+                <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent">
+                  crypto dashboard
+                </span>
+              </h1>
+              <p className="text-xl text-gray-300 leading-relaxed">
+                Access your payment buttons, transaction history, and analytics. 
+                Manage your crypto payment infrastructure with ease.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-white">Why choose Cryptonite?</h3>
+              <div className="space-y-4">
+                {features.map((feature, index) => (
+                  <div key={index} className="flex items-start space-x-4 group">
+                    <div className="text-blue-400 group-hover:scale-110 transition-transform duration-300 flex-shrink-0 mt-1">
+                      {feature.icon}
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-1">{feature.title}</h4>
+                      <p className="text-gray-300">{feature.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-cyan-600/10 rounded-2xl p-6 border border-gray-700/50">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Lock className="h-4 w-4 text-white" />
+                </div>
+                <h4 className="text-lg font-semibold text-white">Secure & Compliant</h4>
+              </div>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                Your data is protected with enterprise-grade security. We&apos;re SOC 2 compliant 
+                and follow industry best practices for crypto payment processing.
+              </p>
+            </div>
+          </div>
+
+          {/* Right Side - Sign In Form */}
+          <div className="flex justify-center lg:justify-end">
+            <div className="w-full max-w-md">
+              <Card className="bg-gradient-to-br from-gray-900/80 to-gray-800/50 border-gray-700/50 backdrop-blur-sm shadow-2xl">
+                <CardContent className="p-8">
+                  <div className="text-center mb-8">
+                    <div className="h-16 w-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                      <Cpu className="h-8 w-8 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
+                    <p className="text-gray-400">Sign in to continue to your dashboard</p>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <SignIn />
+                  </div>
+
+                  <div className="mt-8 text-center">
+                    <p className="text-gray-400 text-sm">
+                      Don&apos;t have an account?{" "}
+                      <Link href="/sign-in" className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-medium">
+                        Sign up here
+                      </Link>
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-800/50 bg-gradient-to-br from-gray-950/90 to-black/90 py-12 backdrop-blur-sm mt-20">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-3 mb-4 md:mb-0">
+              <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                <Cpu className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Cryptonite
+              </span>
+            </div>
+            <div className="text-sm text-gray-500">
+              Built for the crypto community
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }

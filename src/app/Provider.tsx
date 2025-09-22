@@ -46,24 +46,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <RainbowKitProvider>
             <ClerkProvider>
-              <header className="flex justify-between items-center p-4 h-16 border-b">
-                <div className="text-lg font-semibold">
-                  <Link href="/">
-                    <h2>Cryptonite</h2>
-                  </Link>
-                </div>
+              <SignedIn>
+                <header className="flex justify-between items-center p-4 h-16 border-b">
+                  <div className="text-lg font-semibold">
+                    <Link href="/">
+                      <h2>Cryptonite</h2>
+                    </Link>
+                  </div>
 
-                <nav className="hidden sm:flex gap-4 items-center">
-                  <SignedOut>
-                    <SignInButton />
-                    <SignUpButton>
-                      <Button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-                        Sign Up
-                      </Button>
-                    </SignUpButton>
-                  </SignedOut>
-
-                  <SignedIn>
+                  <nav className="hidden sm:flex gap-4 items-center">
                     <ConnectButton />
                     <Link href="/buttons">Buttons</Link>
                     <Link href="/history">History</Link>
@@ -74,28 +65,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                         Sign Out
                       </button>
                     </SignOutButton>
-                  </SignedIn>
-                </nav>
+                  </nav>
 
-                <div className="sm:hidden">
-                  <button onClick={() => setOpen(!open)}>
-                    {open ? <X size={24} /> : <Menu size={24} />}
-                  </button>
-                </div>
-              </header>
+                  <div className="sm:hidden">
+                    <button onClick={() => setOpen(!open)}>
+                      {open ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                  </div>
+                </header>
 
-              {open && (
-                <div className="sm:hidden flex flex-col items-start gap-4 p-4 border-b">
-                  <SignedOut>
-                    <SignInButton />
-                    <SignUpButton>
-                      <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm h-10 px-4 cursor-pointer">
-                        Sign Up
-                      </button>
-                    </SignUpButton>
-                  </SignedOut>
-
-                  <SignedIn>
+                {open && (
+                  <div className="sm:hidden flex flex-col items-start gap-4 p-4 border-b">
                     <ConnectButton />
                     <Link href="/buttons" onClick={() => setOpen(false)}>
                       Buttons
@@ -112,9 +92,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                         Sign Out
                       </button>
                     </SignOutButton>
-                  </SignedIn>
-                </div>
-              )}
+                  </div>
+                )}
+              </SignedIn>
 
               {children}
             </ClerkProvider>

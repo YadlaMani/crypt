@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Crypto Checkout",
-  description: "Stripe/PayPal-style crypto payment platform for merchants",
+  title: "Cryptonite - Accept Crypto Payments Like Never Before",
+  description: "The most powerful, secure, and developer-friendly crypto payment platform. Built for merchants who demand enterprise-grade reliability and seamless integration.",
 };
 
 export default function RootLayout({
