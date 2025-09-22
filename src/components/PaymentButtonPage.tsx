@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { toast } from "sonner";
 import { Loader2, Check, X } from "lucide-react";
 
 type TransactionStatus = "creating" | "pending" | "success" | "failed" | null;
@@ -40,7 +41,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 
   const handlePayment = async () => {
     if (!cryptoId.trim()) {
-      alert("Please enter your crypto ID");
+      toast.error("Please enter your crypto ID");
       return;
     }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import Profile from "@/models/profileModel";
 import Transaction from "@/models/transactionModel";
@@ -97,24 +98,61 @@ export async function getTransactionById(transactionId: string) {
   }
 }
 
-export async function updateTransactionStatus(transactionId: string, status: string, signature?: string) {
+export async function updateTransactionStatus(
+  transactionId: string,
+  status: string,
+  signature?: string
+) {
   try {
     const updateData: any = { status };
     if (signature) {
       updateData.signature = signature;
     }
-    
-    await Transaction.updateOne(
-      { _id: transactionId },
-      { $set: updateData }
-    );
-    
+
+    await Transaction.updateOne({ _id: transactionId }, { $set: updateData });
+
     return { success: true };
   } catch (err) {
     console.error(err);
     return {
       success: false,
       error: "Failed to update transaction status",
+      details: err instanceof Error ? err.message : err,
+    };
+  }
+}
+
+export async function fetchUserTransactions(userId: string) {
+  try {
+    const profile = await Profile.findOne({ userId: userId });
+    if (!profile) {
+      return { success: false, error: "Profile not found", transactions: [] };
+    }
+    const transactions = await Transaction.find({ from: profile.email }).sort({
+      time: -1,
+    });
+    for (let i = 0; i < transactions.length; i++) {
+      if (
+        Date.now() - new Date(transactions[i].time).getTime() >
+          10 * 60 * 1000 &&
+        transactions[i].status === "pending"
+      ) {
+        await Transaction.updateOne(
+          { _id: transactions[i]._id },
+          { $set: { status: "failed" } }
+        );
+        transactions[i].status = "failed";
+      }
+    }
+    return {
+      success: true,
+      transactions: JSON.parse(JSON.stringify(transactions)) as Transaction[],
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      success: false,
+      error: "Failed to fetch transactions",
       details: err instanceof Error ? err.message : err,
     };
   }

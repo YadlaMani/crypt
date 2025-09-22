@@ -8,6 +8,7 @@ const buttonComponentCode = `// PaymentButton.tsx
 "use client";
 
 import React, { useState } from "react";
+
 import { Loader2, Check, X } from "lucide-react";
 
 type TransactionStatus = "creating" | "pending" | "success" | "failed" | null;

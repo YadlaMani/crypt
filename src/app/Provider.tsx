@@ -47,7 +47,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <RainbowKitProvider>
             <ClerkProvider>
               <header className="flex justify-between items-center p-4 h-16 border-b">
-                <div className="text-lg font-semibold">Crypto Checkout</div>
+                <div className="text-lg font-semibold">
+                  <Link href="/">
+                    <h2>Cryptonite</h2>
+                  </Link>
+                </div>
 
                 <nav className="hidden sm:flex gap-4 items-center">
                   <SignedOut>
