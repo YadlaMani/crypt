@@ -35,21 +35,21 @@ const features = [
 
 export default function SignInPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
-      <nav className="border-b border-gray-800/50 bg-black/20 backdrop-blur-sm">
+      <nav className="border-b border-blue-900/30 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+              <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 transition-all duration-300 group-hover:scale-105">
                 <Cpu className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent group-hover:from-blue-100 group-hover:to-white transition-all duration-300">
                 Cryptonite
               </span>
             </Link>
             <Link href="/">
-              <Button variant="outline" className="border-gray-600 text-gray-300 hover:text-white hover:border-blue-500 hover:bg-blue-500/10 group">
+              <Button variant="outline" className="border-blue-600/50 text-blue-400 hover:bg-blue-600/10 hover:border-blue-500 hover:text-blue-300 transition-all duration-300 hover:scale-105 font-medium group">
                 <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
                 Back to Home
               </Button>
@@ -63,7 +63,7 @@ export default function SignInPage() {
           {/* Left Side - Features */}
           <div className="space-y-8">
             <div className="space-y-6">
-              <Badge variant="secondary" className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 border-blue-500/30 text-lg px-6 py-3 w-fit">
+              <Badge variant="secondary" className="w-fit bg-blue-600/20 text-blue-300 border-blue-500/30 text-lg px-6 py-3">
                 <Sparkles className="h-5 w-5 mr-2" />
                 Welcome Back
               </Badge>
@@ -72,7 +72,7 @@ export default function SignInPage() {
                   Sign in to your
                 </span>
                 <br />
-                <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
                   crypto dashboard
                 </span>
               </h1>
@@ -99,9 +99,9 @@ export default function SignInPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-cyan-600/10 rounded-2xl p-6 border border-gray-700/50">
+            <div className="bg-gradient-to-r from-blue-600/10 to-blue-400/10 rounded-2xl p-6 border border-blue-900/30">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
                   <Lock className="h-4 w-4 text-white" />
                 </div>
                 <h4 className="text-lg font-semibold text-white">Secure & Compliant</h4>
@@ -116,29 +116,27 @@ export default function SignInPage() {
           {/* Right Side - Sign In Form */}
           <div className="flex justify-center lg:justify-end">
             <div className="w-full max-w-md">
-              <Card className="bg-gradient-to-br from-gray-900/80 to-gray-800/50 border-gray-700/50 backdrop-blur-sm shadow-2xl">
-                <CardContent className="p-8">
-                  <div className="text-center mb-8">
-                    <div className="h-16 w-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                      <Cpu className="h-8 w-8 text-white" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
-                    <p className="text-gray-400">Sign in to continue to your dashboard</p>
+              <Card className="p-8 bg-gray-900/80 backdrop-blur-sm border-blue-900/30">
+                <div className="text-center mb-8">
+                  <div className="h-16 w-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <Cpu className="h-8 w-8 text-white" />
                   </div>
-                  
-                  <div className="space-y-6">
-                    <SignIn />
-                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
+                  <p className="text-gray-400">Sign in to continue to your dashboard</p>
+                </div>
+                
+                <div className="space-y-6">
+                  <SignIn />
+                </div>
 
-                  <div className="mt-8 text-center">
-                    <p className="text-gray-400 text-sm">
-                      Don&apos;t have an account?{" "}
-                      <Link href="/sign-in" className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-medium">
-                        Sign up here
-                      </Link>
-                    </p>
-                  </div>
-                </CardContent>
+                <div className="mt-8 text-center">
+                  <p className="text-gray-400 text-sm">
+                    Don&apos;t have an account?{" "}
+                    <Link href="/sign-in" className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-medium">
+                      Sign up here
+                    </Link>
+                  </p>
+                </div>
               </Card>
             </div>
           </div>
@@ -146,14 +144,14 @@ export default function SignInPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800/50 bg-gradient-to-br from-gray-950/90 to-black/90 py-12 backdrop-blur-sm mt-20">
+      <footer className="border-t border-blue-900/30 py-12 backdrop-blur-sm mt-20">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+              <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center shadow-lg">
                 <Cpu className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
                 Cryptonite
               </span>
             </div>
